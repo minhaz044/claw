@@ -16,6 +16,7 @@ from tools.browser_tools import (
 
 AGENT_NODE = 'AGENT_NODE'
 TOOLS_NODE = 'tools'
+counter: int = 0
 
 
 class BrowserWorkflow:
@@ -30,7 +31,6 @@ class BrowserWorkflow:
         self.llm = llm.bind_tools(self.browser_tools)
 
     async def _browser_agent_node(self, state: AgentState):
-        print(state)
         messages = [BROWSER_SYSTEM_MESSAGE] + list(state["messages"])
         response = await self.llm.ainvoke(messages)
 
@@ -41,7 +41,7 @@ class BrowserWorkflow:
                     f"| arguments: {call['args']}"
                 )
         else:
-            print("AI:", response.content)
+            print("AI:", response.text)
 
         return {"messages": [response]}
 

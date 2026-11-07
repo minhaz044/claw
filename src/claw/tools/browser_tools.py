@@ -17,7 +17,7 @@ async def browser_open_url(url: str):
     Returns (str): The actual result returned by the browser manager,
       including navigation status or page information.
     """
-    return _browser_manager.open_web_url(url)
+    return await _browser_manager.open_web_url(url)
 
 
 @tool
@@ -31,7 +31,7 @@ async def browser_inspect_page():
     Returns:
         str: Page content and interactive element details.
     """
-    return _browser_manager.inspect_web_page()
+    return await _browser_manager.inspect_web_page()
 
 
 @tool
@@ -45,7 +45,7 @@ async def browser_click_element(selector: str):
     Returns:
         str: Result of the click operation.
     """
-    return _browser_manager.click_an_element(selector)
+    return await _browser_manager.click_an_element(selector)
 
 
 @tool
@@ -60,7 +60,7 @@ async def browser_type_into_element(selector: str, text: str):
     Returns:
         str: Result of the typing operation.
     """
-    return _browser_manager.type_into_input_field(selector, text)
+    return await _browser_manager.type_into_input_field(selector, text)
 
 
 @tool
@@ -75,4 +75,4 @@ async def browser_press_btn(selector: str, key: str):
     Returns:
         str: Result of the key press operation on the web page.
     """
-    return _browser_manager.press__btn(selector, key)
+    return await _browser_manager.press__btn(selector, key)

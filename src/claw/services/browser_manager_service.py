@@ -17,7 +17,7 @@ class BrowserManagerService:
         ):
             return self._page
 
-        await self.close()
+        await self._close()
 
         self._playwright = await async_playwright().start()
         self._browser = await self._playwright.firefox.launch(
