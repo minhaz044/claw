@@ -24,7 +24,9 @@
    - [Step 6 — Build the Workflow](#step-6--build-the-workflow)
    - [Step 7 — The Chat Loop](#step-7--the-chat-loop)
    - [Step 8 — Run It](#step-8--run-it)
-8. [How a Prescription Flows](#-how-a-prescription-flows)
+8. [How Tasks Flow](#-how-tasks-flow)
+   - [Example 1 — A voice-doctor prescription](#example-1--a-voice-doctor-prescription)
+   - [Example 2 — Play a YouTube song](#example-2--play-a-youtube-song)
 9. [Where It Can Go Next](#-where-it-can-go-next)
 
 ---
@@ -887,11 +889,17 @@ Type a goal, press Enter, and watch Firefox open and start working.
 
 ---
 
-## 🔁 How a Prescription Flows
+## 🔁 How Tasks Flow
 
-Here's a concrete run of the whole thing. This is a **voice-doctor prescription
-assistant** demo: a doctor dictates a prescription in plain English, and the agent
-fills the clinic's web form for them — no hard-coded selectors, no fixed script.
+The same five hands solve very different jobs depending on the goal. Here are two
+concrete runs — a **form-filling** task and a **search-and-play** task. Notice in
+both that the agent never guesses selectors: it always inspects first.
+
+### Example 1 — A voice-doctor prescription
+
+A form-filling task: a doctor dictates a prescription in plain English, and the
+agent fills the clinic's web form for them — no hard-coded selectors, no fixed
+script.
 
 **The task you type:**
 
@@ -964,14 +972,92 @@ Application exited.
 ```
 
 Read that trace like a story: **open → inspect → type ×4 → press → verify → answer.**
-The brain planned, the hands executed, the loop verified. The LLM thought; the
-tools did.
+The brain planned, the hands executed, the loop verified.
 
-> 💡 **Try it right now.** The `clinic.example.com` portal is a stand-in — point it
-> at your own clinic site. To sanity-check the whole pipeline immediately, any
-> public form works, e.g. *"Open https://httpbin.org/forms/post, fill the customer
-> name with 'Claw Bot', pick a pizza size, and submit the order."* If Firefox opens
-> and the form gets filled, your hands are wired up correctly.
+### Example 2 — Play a YouTube song
+
+A search-and-play task with no form at all — just navigation, a search, and a
+click. This is the very example named in the system prompt.
+
+**The task you type:**
+
+```
+Open YouTube and play the song "Tumi Robe Nirobe".
+Tell me once it is actually playing.
+```
+
+**The decision chain the agent walks:**
+
+```
+  🗣  "play Tumi Robe Nirobe on YouTube"
+        │
+        ▼
+  ┌─────────────────────────────────────────────┐
+  │ browser_open_url(youtube.com)                │  → homepage loaded
+  └─────────────────────────────────────────────┘
+        │
+        ▼
+  ┌─────────────────────────────────────────────┐
+  │ browser_inspect_page()                       │  → finds the search box
+  └─────────────────────────────────────────────┘
+        │
+        ▼
+  ┌─────────────────────────────────────────────┐
+  │ browser_type_into_element(search, song)      │  → "Tumi Robe Nirobe"
+  │ browser_press_btn(search, "Enter")           │  → search submitted
+  └─────────────────────────────────────────────┘
+        │
+        ▼
+  ┌─────────────────────────────────────────────┐
+  │ browser_inspect_page()                       │  → reads the results list
+  └─────────────────────────────────────────────┘
+        │
+        ▼
+  ┌─────────────────────────────────────────────┐
+  │ browser_click_element(video result)          │  → watch page opens
+  └─────────────────────────────────────────────┘
+        │
+        ▼
+  ┌─────────────────────────────────────────────┐
+  │ browser_inspect_page()                       │  → confirms it is playing
+  └─────────────────────────────────────────────┘
+        │
+        ▼
+   Final answer + "The assigned task completed"  → loop ends
+```
+
+**What the console shows:**
+
+```
+What would you like me to do? (type 'exit' to quit): <your task>
+
+AI requested tool: browser_open_url | arguments: {'url': 'https://www.youtube.com'}
+AI requested tool: browser_inspect_page | arguments: {}
+AI requested tool: browser_type_into_element | arguments: {'selector': 'input[name="search_query"]', 'text': 'Tumi Robe Nirobe'}
+AI requested tool: browser_press_btn | arguments: {'selector': 'input[name="search_query"]', 'key': 'Enter'}
+AI requested tool: browser_inspect_page | arguments: {}
+AI requested tool: browser_click_element | arguments: {'selector': 'a#video-title'}
+AI requested tool: browser_inspect_page | arguments: {}
+AI: Now playing "Tumi Robe Nirobe" on YouTube — the watch page is open and the video is playing. The assigned task completed
+
+What would you like me to do? (type 'exit' to quit): exit
+Application exited.
+```
+
+Read that trace: **open → inspect → type → press → inspect → click → verify.** The
+agent does not fire and forget — after clicking the result it inspects the page
+*again* to confirm the video actually started, and only then reports success.
+
+> 💡 **Try it right now.** The two examples use `clinic.example.com` and YouTube,
+> but any site works. To sanity-check the whole pipeline immediately, try either of
+> these exactly as written:
+>
+> - **Form fill:** *"Open https://httpbin.org/forms/post, fill the customer name with
+>   'Claw Bot', pick a pizza size, and submit the order."*
+> - **Search & play:** *"Open YouTube and play a Bangla song."*
+>
+> If Firefox opens and the agent carries the task through, your hands are wired up
+> correctly.
 
 ---
 
