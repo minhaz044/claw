@@ -1,0 +1,78 @@
+from claw.services.browser_manager_service import BrowserManagerService
+from langchain.tools import tool
+
+_browser_manager = BrowserManagerService()
+
+
+@tool
+async def browser_open_url(url: str):
+    """
+    Open a URL in the browser and return the actual navigation result.
+    Navigates to the specified URL using the browser manager
+    and reports the result of the navigation.
+
+    Args:
+        url (str): The fully qualified URL to open (e.g., "https://example.com").
+
+    Returns (str): The actual result returned by the browser manager,
+      including navigation status or page information.
+    """
+    return _browser_manager.open_web_url(url)
+
+
+@tool
+async def browser_inspect_page():
+    """
+    Inspect the currently open web page.
+
+    Returns visible page text and available interactive elements,
+    such as buttons, links, and input fields.
+
+    Returns:
+        str: Page content and interactive element details.
+    """
+    return _browser_manager.inspect_web_page()
+
+
+@tool
+async def browser_click_element(selector: str):
+    """
+    Click an element on the currently open web page.
+
+    Args:
+        selector (str): CSS/HTML selector or supported element identifier.
+
+    Returns:
+        str: Result of the click operation.
+    """
+    return _browser_manager.click_an_element(selector)
+
+
+@tool
+async def browser_type_into_element(selector: str, text: str):
+    """
+    Type text into an input or editable element.
+
+    Args:
+        selector (str): Selector identifying the target element.
+        text (str): Text to enter into the element.
+
+    Returns:
+        str: Result of the typing operation.
+    """
+    return _browser_manager.type_into_input_field(selector, text)
+
+
+@tool
+async def browser_press_btn(selector: str, key: str):
+    """
+    Press a keyboard key on an element on the current web page.
+
+    Args:
+        selector (str): Selector identifying the web page element.
+        key (str): Key to press (e.g., Button, link,Enter, Tab, Escape).
+
+    Returns:
+        str: Result of the key press operation on the web page.
+    """
+    return _browser_manager.press__btn(selector, key)

@@ -2,7 +2,7 @@ from playwright.async_api import async_playwright
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 
 
-class BrowserManager:
+class BrowserManagerService:
     def __init__(self):
         self._playwright = None
         self._browser = None
