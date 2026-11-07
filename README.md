@@ -24,9 +24,7 @@
    - [Step 6 — Build the Workflow](#step-6--build-the-workflow)
    - [Step 7 — The Chat Loop](#step-7--the-chat-loop)
    - [Step 8 — Run It](#step-8--run-it)
-8. [How Tasks Flow](#-how-tasks-flow)
-   - [Example 1 — A voice-doctor prescription](#example-1--a-voice-doctor-prescription)
-   - [Example 2 — Play a YouTube song](#example-2--play-a-youtube-song)
+8. [How a Task Flows](#-how-a-task-flows)
 9. [Where It Can Go Next](#-where-it-can-go-next)
 
 ---
@@ -889,95 +887,10 @@ Type a goal, press Enter, and watch Firefox open and start working.
 
 ---
 
-## 🔁 How Tasks Flow
+## 🔁 How a Task Flows
 
-The same five hands solve very different jobs depending on the goal. Here are two
-concrete runs — a **form-filling** task and a **search-and-play** task. Notice in
-both that the agent never guesses selectors: it always inspects first.
-
-### Example 1 — A voice-doctor prescription
-
-A form-filling task: a doctor dictates a prescription in plain English, and the
-agent fills the clinic's web form for them — no hard-coded selectors, no fixed
-script.
-
-**The task you type:**
-
-```
-You are my voice-doctor assistant.
-Open the clinic portal at https://clinic.example.com/prescription
-and write a prescription for patient "Rahim Uddin":
-  - Medicine: Amoxicillin 500mg
-  - Dosage:   1 capsule, three times a day
-  - Duration: 5 days
-Then submit the form and read the prescription ID back to me.
-```
-
-**The decision chain the agent walks** — a tool call at every step:
-
-```
-  🗣  "prescribe Amoxicillin for Rahim Uddin"
-        │
-        ▼
-  ┌─────────────────────────────────────────────┐
-  │ browser_open_url(clinic/prescription)        │  → page loaded
-  └─────────────────────────────────────────────┘
-        │
-        ▼
-  ┌─────────────────────────────────────────────┐
-  │ browser_inspect_page()                       │  → discovers the real fields
-  └─────────────────────────────────────────────┘
-        │
-        ▼
-  ┌─────────────────────────────────────────────┐
-  │ browser_type_into_element(patient, name)     │  → "Rahim Uddin"
-  │ browser_type_into_element(medicine, drug)    │  → "Amoxicillin 500mg"
-  │ browser_type_into_element(dosage, freq)      │  → "1 capsule, three times a day"
-  │ browser_type_into_element(duration, days)    │  → "5 days"
-  └─────────────────────────────────────────────┘
-        │
-        ▼
-  ┌─────────────────────────────────────────────┐
-  │ browser_press_btn(duration, "Enter")         │  → form submitted
-  └─────────────────────────────────────────────┘
-        │
-        ▼
-  ┌─────────────────────────────────────────────┐
-  │ browser_inspect_page()                       │  → prescription ID RX-10427
-  └─────────────────────────────────────────────┘
-        │
-        ▼
-   Final answer + "The assigned task completed"  → loop ends
-```
-
-**What the console shows** (Claw prints every tool call it makes):
-
-```
-What would you like me to do? (type 'exit' to quit): <your task>
-
-AI requested tool: browser_open_url | arguments: {'url': 'https://clinic.example.com/prescription'}
-AI requested tool: browser_inspect_page | arguments: {}
-AI requested tool: browser_type_into_element | arguments: {'selector': 'input[name="patient"]', 'text': 'Rahim Uddin'}
-AI requested tool: browser_type_into_element | arguments: {'selector': 'input[name="medicine"]', 'text': 'Amoxicillin 500mg'}
-AI requested tool: browser_type_into_element | arguments: {'selector': 'input[name="dosage"]', 'text': '1 capsule, three times a day'}
-AI requested tool: browser_type_into_element | arguments: {'selector': 'input[name="duration"]', 'text': '5 days'}
-AI requested tool: browser_press_btn | arguments: {'selector': 'input[name="duration"]', 'key': 'Enter'}
-AI requested tool: browser_inspect_page | arguments: {}
-AI: I have submitted the prescription for Rahim Uddin.
-Amoxicillin 500mg, 1 capsule three times a day for 5 days.
-The portal returned prescription ID RX-10427. The assigned task completed
-
-What would you like me to do? (type 'exit' to quit): exit
-Application exited.
-```
-
-Read that trace like a story: **open → inspect → type ×4 → press → verify → answer.**
-The brain planned, the hands executed, the loop verified.
-
-### Example 2 — Play a YouTube song
-
-A search-and-play task with no form at all — just navigation, a search, and a
-click. This is the very example named in the system prompt.
+Here's a concrete run of the whole thing: a **search-and-play** task. Notice that
+the agent never guesses selectors — it always inspects the page first.
 
 **The task you type:**
 
@@ -986,7 +899,7 @@ Open YouTube and play the song "Tumi Robe Nirobe".
 Tell me once it is actually playing.
 ```
 
-**The decision chain the agent walks:**
+**The decision chain the agent walks** — a tool call at every step:
 
 ```
   🗣  "play Tumi Robe Nirobe on YouTube"
@@ -1026,7 +939,7 @@ Tell me once it is actually playing.
    Final answer + "The assigned task completed"  → loop ends
 ```
 
-**What the console shows:**
+**What the console shows** (Claw prints every tool call it makes):
 
 ```
 What would you like me to do? (type 'exit' to quit): <your task>
@@ -1048,16 +961,9 @@ Read that trace: **open → inspect → type → press → inspect → click →
 agent does not fire and forget — after clicking the result it inspects the page
 *again* to confirm the video actually started, and only then reports success.
 
-> 💡 **Try it right now.** The two examples use `clinic.example.com` and YouTube,
-> but any site works. To sanity-check the whole pipeline immediately, try either of
-> these exactly as written:
->
-> - **Form fill:** *"Open https://httpbin.org/forms/post, fill the customer name with
->   'Claw Bot', pick a pizza size, and submit the order."*
-> - **Search & play:** *"Open YouTube and play a Bangla song."*
->
-> If Firefox opens and the agent carries the task through, your hands are wired up
-> correctly.
+> 💡 **Try it right now.** Any site works, but the quickest sanity check is the
+> same kind of task: *"Open YouTube and play a Bangla song."* If Firefox opens,
+> searches, and starts a video, your hands are wired up correctly.
 
 ---
 
