@@ -27,12 +27,12 @@ class BrowserWorkflow:
             browser_type_into_element,
             browser_press_btn,
         ]
-        self.llm = llm
+        self.llm = llm.bind_tools(self.browser_tools)
 
     async def _browser_agent_node(self, state: AgentState):
         print(state)
         messages = [BROWSER_SYSTEM_MESSAGE] + list(state["messages"])
-        response = await self.llm.invoke(messages)
+        response = await self.llm.ainvoke(messages)
 
         if response.tool_calls:
             for call in response.tool_calls:
