@@ -7,7 +7,14 @@ authors = [
     { name = "Minhaz Uddin", email = "minhaz.uddin@bracits.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "langchain",
+    "langgraph",
+    "playwright",
+    "langchain-google-genai",
+    "python-dotenv",
+    "langchain-openai",
+]
 
 [project.scripts]
 claw = "claw:main"
