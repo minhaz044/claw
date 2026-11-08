@@ -12,6 +12,7 @@ from tools.browser_tools import (
     browser_click_element,
     browser_type_into_element,
     browser_press_btn,
+    browser_open_url_in_new_tab
 )
 
 AGENT_NODE = 'AGENT_NODE'
@@ -27,6 +28,7 @@ class BrowserWorkflow:
             browser_click_element,
             browser_type_into_element,
             browser_press_btn,
+            browser_open_url_in_new_tab,
         ]
         self.llm = llm.bind_tools(self.browser_tools)
 

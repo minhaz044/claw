@@ -7,6 +7,7 @@ class BrowserManagerService:
         self._playwright = None
         self._browser = None
         self._page = None
+        self._context = None
 
     async def _get_page(self):
         if (
@@ -23,7 +24,9 @@ class BrowserManagerService:
         self._browser = await self._playwright.firefox.launch(
             headless=False
         )
-        self._page = await self._browser.new_page()
+
+        self._context = await self._browser.new_context()
+        self._page = await self._context.new_page()
 
         self._page.set_default_timeout(15000)
         self._page.set_default_navigation_timeout(30000)
@@ -31,6 +34,14 @@ class BrowserManagerService:
         return self._page
 
     async def _close(self):
+        print(".........closing")
+        if self._context is not None:
+            try:
+                await self._context.close()
+            except Exception:
+                pass
+
+        self._context = None
         if self._browser is not None:
             try:
                 await self._browser.close()
@@ -166,3 +177,39 @@ class BrowserManagerService:
             return f"Pressed {key} on {selector}"
         except Exception as e:
             return f"Key press failed: {type(e).__name__}: {e}"
+
+    async def new_tab(self, url: str = None) -> str:
+        """Create a new browser tab and optionally navigate to a URL."""
+
+        try:
+            # Ensure browser is running
+            await self._get_page()
+
+            # Create a new tab in the same context
+            new_page = await self._context.new_page()
+
+            new_page.set_default_timeout(15000)
+            new_page.set_default_navigation_timeout(30000)
+
+            # Navigate if URL is provided
+            if url:
+                if not url.startswith(("http://", "https://")):
+                    url = "https://" + url
+
+                await new_page.goto(
+                    url,
+                    wait_until="domcontentloaded",
+                    timeout=60000,
+                )
+
+            # Make the new tab the active page for your service
+            self._page = new_page
+
+            return (
+                f"New tab created successfully.\n"
+                f"URL: {new_page.url}\n"
+                f"Title: {await new_page.title()}"
+            )
+
+        except Exception as e:
+            return f"New tab creation failed: {type(e).__name__}: {e}"

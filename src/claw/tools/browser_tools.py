@@ -76,3 +76,23 @@ async def browser_press_btn(selector: str, key: str):
         str: Result of the key press operation on the web page.
     """
     return await _browser_manager.press__btn(selector, key)
+
+@tool
+async def browser_open_url_in_new_tab(url: str = None):
+    """
+    Open a URL in a new browser tab.
+
+    Creates a new tab in the existing browser context, keeping all
+    previously opened tabs and their login sessions, cookies, and
+    browser storage intact.
+
+    Args:
+        url (str, optional): The URL to open in the new tab.
+            Supports URLs with or without http:// or https://.
+            If omitted, a blank new tab will be created.
+
+    Returns:
+        str: Result of the new tab creation, including the URL
+            and page title, or an error message if creation fails.
+    """
+    return await _browser_manager.new_tab(url)
