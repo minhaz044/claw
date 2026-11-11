@@ -15,6 +15,7 @@ from tools.browser_tools import (
     browser_open_url_in_new_tab
 )
 
+
 AGENT_NODE = 'AGENT_NODE'
 TOOLS_NODE = 'tools'
 counter: int = 0

@@ -15,6 +15,7 @@ dependencies = [
     "python-dotenv",
     "langchain-openai",
     "langchain-core>=1.7.6",
+    "pyautogui>=0.9.54",
 ]
 
 [project.scripts]
